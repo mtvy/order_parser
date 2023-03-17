@@ -1,0 +1,9 @@
+version: "2"
+
+services:
+
+  order_parser:
+    container_name: order_parser
+    build: ./
+    restart: always
+    command: python test.py
