@@ -1,8 +1,8 @@
 selenium==4.8.2
 coloredlogs==15.0.1
-
 pyTelegramBotAPI==4.7.0
 python-dotenv==0.21.0
 Telethon==1.26.1
 pylint==2.17.0
 radon==5.1.0
+ddddocr==1.4.7

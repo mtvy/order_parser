@@ -19,9 +19,13 @@ log.info(f'Token:{token}')
 log.info(f'Admins:{admins}')
 
 bot = TeleBot(token)
-browser = parsing.Browser(parsing.LOGIN, parsing.PASSWORD, [])
+browser = parsing.Browser(parsing.LOGIN, parsing.PASSWORD, [
+        '--no-sandbox',
+        '--headless',
+        '--disable-gpu',
+    ])
 
-def noAccess(log, bot: TeleBot, tid: str|int) -> None:
+def noAccess(log, bot: TeleBot, tid: str|int, _) -> None:
     cases.send_msg(log, bot, tid, 'Нет доступа.', rmvKb())
 
 menuFuncs = {

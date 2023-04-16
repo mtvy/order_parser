@@ -3,7 +3,7 @@ version: "2"
 services:
 
   order_parser:
-    container_name: order_parser
+    container_name: order_parser_type_2
     build: ./
     restart: always
-    command: python test.py
+    # command: python test.py

@@ -1,4 +1,4 @@
-FROM python:latest
+FROM python:3.10
 
 ENV PYTHONUNBUFFERED 1
 
@@ -23,4 +23,4 @@ COPY . /code/
 
 RUN pip install -r requirements.txt
 
-ENTRYPOINT [ "python", "test.py" ]
+ENTRYPOINT [ "python", "bot.py" ]

@@ -9,6 +9,12 @@ from typing import List
 
 from .decoder import decodeCaptcha
 
+from cases import (
+    send_photo,
+    send_msg,
+)
+from random import randint
+
 DEFAULT_LINK = "https://alma-ata.kdmid.ru/queue"
 MAIN_PREF    = "orderinfo.aspx"
 KP_PREF      = "CodeImage.aspx?id="
@@ -16,8 +22,12 @@ KP_PREF_LEN  = len(KP_PREF)
 
 SINGIN_PAGE = f"{DEFAULT_LINK}/{MAIN_PREF}"
 
-LOGIN    = "67641"
-PASSWORD = "BFED6E7C"
+# LOGIN    = "68596"
+# PASSWORD = "77C0A062"
+LOGIN    = "68597"
+PASSWORD = "A67BAE5F"
+# LOGIN    = "68598"
+# PASSWORD = "A8910507"
 
 class Browser:
 
@@ -68,41 +78,50 @@ class Browser:
             log.error(f"decodeCaptcha error:'{err}'")
         return recap
     
-    def sign_in(self) -> bool:
-
-        cap = self.find_elem("ctl00_MainContent_imgSecNum", By.ID)
-        recap = self.make_recap(cap)
-
-        if not recap:
-            log.error("Wrong captcha decode!")
-            return False
+    def sign_in(self, bot, tid, browser) -> bool:
+        try: 
+            cap = self.find_elem("ctl00_MainContent_imgSecNum", By.ID)
+            recap = self.make_recap(cap)
+            
+            if not recap:
+                log.error("Wrong captcha decode!")
+                return False
+            
+            self.find_elem(
+                "//input[@name='ctl00$MainContent$txtID']", 
+                By.XPATH,
+            ).send_keys(self.login)
         
-        self.find_elem(
-            "//input[@name='ctl00$MainContent$txtID']", 
-            By.XPATH,
-        ).send_keys(self.login)
-    
-        self.find_elem(
-            "//input[@name='ctl00$MainContent$txtUniqueID']", 
-            By.XPATH,
-        ).send_keys(self.password)
-    
-        self.find_elem(
-            "//input[@name='ctl00$MainContent$txtCode']",
-            By.XPATH,
-        ).send_keys(recap)
+            self.find_elem(
+                "//input[@name='ctl00$MainContent$txtUniqueID']", 
+                By.XPATH,
+            ).send_keys(self.password)
+        
+            self.find_elem(
+                "//input[@name='ctl00$MainContent$txtCode']",
+                By.XPATH,
+            ).send_keys(recap)
 
-        time.sleep(3)
-        self.find_elem(
-            "//input[@name='ctl00$MainContent$ButtonA']", 
-            By.XPATH,
-        ).click()
+            send_photo(log, bot, tid, f'Скрин страницы до клика на первую кнопку.', browser.make_full_shot())
 
-        time.sleep(3)
-        self.find_elem(
-            "//input[@name='ctl00$MainContent$ButtonB']",
-            By.XPATH, 
-        ).click()
+            time.sleep(3)
+            self.find_elem(
+                "//input[@name='ctl00$MainContent$ButtonA']", 
+                By.XPATH,
+            ).click()
+
+            send_photo(log, bot, tid, f'Скрин страницы до клика на вторую кнопку.', browser.make_full_shot())
+
+            time.sleep(3)
+            self.find_elem(
+                "//input[@name='ctl00$MainContent$ButtonB']",
+                By.XPATH, 
+            ).click()
+
+        except Exception as err:
+            send_msg(log, bot, tid, err)
+            log.error(err)
+
 
         return True
     
@@ -122,15 +141,20 @@ class Browser:
         time.sleep(part)
         log.debug(f"Sleeper sleeped for {part} seconds")
     
-    def refresh_loop(self, day_click_count: int) -> None:
+    def refresh_loop(self, day_click_count: int, bot, tid) -> None:
         max_count = self.refresh_count + day_click_count
         log.info(f"Refresh loop started. "
                  f"refreshes:{self.refresh_count} "
                  f"stop_count:{max_count}")
-        while self.refresh_count < max_count:
-            self.refresh()
+        # while self.refresh_count < max_count:
+        while True:
             # TODO: ACTION
-            self.sleep_day_parts(day_click_count)
+            sl = randint(60, 120)
+            time.sleep(sl)
+            send_photo(log, bot, tid, 
+                       f'Скрин страницы сон:{sl}', self.make_full_shot())
+            self.refresh()
+            # self.sleep_day_parts(day_click_count)
 
     def make_shot(self, elem: WebElement) -> bytes:
         log.info(f"Make shot")
@@ -141,7 +165,11 @@ class Browser:
         return self.driver.get_screenshot_as_png()
 
 def imit_browser(link: str):
-    browser = Browser(LOGIN, PASSWORD, [])
+    browser = Browser(LOGIN, PASSWORD, [
+        '--no-sandbox',
+        '--headless',
+        '--disable-gpu',
+    ])
     browser.load_page(link)
 
     browser.sign_in()
